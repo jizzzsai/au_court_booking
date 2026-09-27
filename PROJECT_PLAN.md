@@ -10,6 +10,6 @@ This project follows the backend proposal and is being built in testable stages.
 6. Booking conflict prevention, cancellation, and history
 7. Google Maps facility links and peer API key integration
 8. Automated tests, security review, and local production build
-9. Linux VPS, Nginx, HTTPS, and Azure Key Vault deployment
+9. Linux VM, Nginx, and HTTPS demonstration deployment (complete); Azure Key Vault integration (pending)
 
 The existing `crud-api` coursework project remains unchanged.

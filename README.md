@@ -194,4 +194,7 @@ npm run build
 2. Move deployment credentials and API keys to Azure Key Vault.
 3. Confirm the peer project's consumed API contract.
 4. Add broader integration and security tests.
-5. Deploy the application behind Nginx and HTTPS on the Linux VPS.
+
+The demonstration deployment behind Nginx and HTTPS on the Linux Azure VM is
+complete. It is not a production deployment while demo credentials and local
+JWT login remain enabled.
