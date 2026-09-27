@@ -3,6 +3,7 @@ name: Publish Linux AMD64 image
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
@@ -27,5 +28,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/jizzzsai/au_court_booking:latest
+            ghcr.io/jizzzsai/au_court_booking:${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
             ghcr.io/jizzzsai/au_court_booking:${{ github.sha }}

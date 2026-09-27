@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+const basePath = process.env.SITE_BASE_PATH ?? "";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,23 +15,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.PUBLIC_ORIGIN ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "AU Campus Court",
   description: "Find and reserve Assumption University sports facilities.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: `${basePath}/favicon.svg`,
+    shortcut: `${basePath}/favicon.svg`,
   },
   openGraph: {
     title: "AU Campus Court",
     description: "Find a court. Book your time. Play.",
-    images: [{ url: "/og.png", width: 1672, height: 941, alt: "AU Campus Court" }],
+    images: [{ url: `${basePath}/og.png`, width: 1672, height: 941, alt: "AU Campus Court" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "AU Campus Court",
     description: "Find a court. Book your time. Play.",
-    images: ["/og.png"],
+    images: [`${basePath}/og.png`],
   },
 };
 

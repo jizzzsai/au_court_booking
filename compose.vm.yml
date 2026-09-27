@@ -5,15 +5,18 @@ services:
     command: sh -c "npm run build && npm run start"
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?Set PUBLIC_API_URL in .env}
+      SITE_BASE_PATH: /au-campus-court
+      API_INTERNAL_URL: http://api:4000
+      NEXT_PUBLIC_API_URL: /au-campus-court/api
       NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:?Set PUBLIC_SITE_URL in .env}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN in .env}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:${WEB_HOST_PORT:-3100}:3000"
     depends_on:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/au-campus-court/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 18
@@ -35,9 +38,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       PEER_API_KEY: ${PEER_API_KEY:?Set PEER_API_KEY in .env}
       API_PORT: "4000"
-      WEB_ORIGIN: ${PUBLIC_SITE_URL}
-    ports:
-      - "4000:4000"
+      WEB_ORIGIN: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN in .env}
+    expose:
+      - "4000"
     depends_on:
       database:
         condition: service_healthy

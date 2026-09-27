@@ -35,7 +35,8 @@ All seeded accounts use password `Student123!`.
 | Staff | `staff@au.edu` |
 | Administrator | `admin@au.edu` |
 
-These credentials are only for local development.
+These credentials are for this course demonstration only. The VM configuration
+keeps the same seeded accounts and password; do not reuse them for a real service.
 
 ## First-time setup
 
@@ -66,36 +67,47 @@ same ports.
 
 ### Run on a Linux AMD64 VM without cloning the repository
 
-The GitHub Actions workflow publishes one `linux/amd64` image to
-`ghcr.io/jizzzsai/au_court_booking`. It contains the application source and
-dependencies. On the VM, place only two files in the same directory:
+The GitHub Actions workflow publishes a `linux/amd64` image to
+`ghcr.io/jizzzsai/au_court_booking`. A Git tag such as `v1` produces the matching
+image tag, so the VM can pin a release rather than a commit hash. The image
+contains the application source and dependencies. On the VM, place only two
+files in the same directory:
 
 - `compose.yml`: a copy of this repository's `compose.vm.yml`
 - `.env`: a copy of `vm.env.example` with the VM's public URLs and unique secrets
 
 Generate each secret independently with `openssl rand -hex 32`. Use a hexadecimal
 database password because Compose also puts it in a MySQL connection URL. Set
-`PUBLIC_SITE_URL` to `http://VM_IP:3000` and `PUBLIC_API_URL` to
-`http://VM_IP:4000/api` (or your actual HTTPS URLs if a reverse proxy is set up).
-Open ports 3000 and 4000 in the VM firewall for direct HTTP access.
+`PUBLIC_ORIGIN` to the existing site's scheme and host, such as
+`https://example.edu`, and `PUBLIC_SITE_URL` to the same URL plus
+`/au-campus-court`. Set `IMAGE_TAG=v1` (or a later published version).
+`WEB_HOST_PORT` defaults to 3100; first check that this loopback port is free.
+The API and database are private Docker services; only the website is published
+on `127.0.0.1:3100`.
 
-After the GHCR package is made public, run this in that VM directory:
+Once the chosen GHCR image tag is available, run this in that VM directory:
 
 ```bash
 docker compose up -d
 docker compose ps
 ```
 
-The first run pulls the application and MySQL images, creates the database,
-applies migrations, and seeds courts plus student, staff, and admin accounts.
+The first run pulls the application and MySQL images, builds the website for
+`/au-campus-court` inside the container, creates the database, applies
+migrations, and seeds courts plus student, staff, and admin accounts.
 The three seeded accounts use the emails below and the demo password
 `Student123!`, just like the local setup. The database lives in a named Docker volume.
 To inspect startup errors, use `docker compose logs -f`. To stop the stack
 without deleting data, use `docker compose down`.
 
-This VM setup is suitable for a working demonstration. It uses HTTP on ports
-3000 and 4000; add a reverse proxy and HTTPS before treating it as a public
-production service.
+To reach the site at `https://YOUR_FQDN/au-campus-court`, add one route to the
+VM's **existing** reverse proxy: forward `/au-campus-court` and everything
+under `/au-campus-court/` to `http://127.0.0.1:3100`, preserving the full path.
+Do not replace the existing root-site configuration. The exact proxy rule
+depends on what already runs on the VM; `docker compose up -d` alone cannot
+claim a subpath on an existing FQDN. No new public API port or database port is
+needed: browser API requests use `/au-campus-court/api` through the web
+container. Configure HTTPS on the existing proxy as appropriate.
 
 ### Run Node.js on your Mac with only MySQL in Docker
 
