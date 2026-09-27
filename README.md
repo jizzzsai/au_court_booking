@@ -88,9 +88,8 @@ docker compose ps
 
 The first run pulls the application and MySQL images, creates the database,
 applies migrations, and seeds courts plus student, staff, and admin accounts.
-The three seeded accounts use the emails below and the private `SEED_PASSWORD`
-from `.env`. Changing `SEED_PASSWORD` after first startup does not change the
-passwords of existing accounts. The database lives in a named Docker volume.
+The three seeded accounts use the emails below and the demo password
+`Student123!`, just like the local setup. The database lives in a named Docker volume.
 To inspect startup errors, use `docker compose logs -f`. To stop the stack
 without deleting data, use `docker compose down`.
 

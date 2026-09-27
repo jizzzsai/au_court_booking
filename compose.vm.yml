@@ -7,7 +7,6 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?Set PUBLIC_API_URL in .env}
       NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:?Set PUBLIC_SITE_URL in .env}
-      NEXT_PUBLIC_DEMO_MODE: "false"
     ports:
       - "3000:3000"
     depends_on:
@@ -35,8 +34,6 @@ services:
       DB_NAME: au_campus_court
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       PEER_API_KEY: ${PEER_API_KEY:?Set PEER_API_KEY in .env}
-      SEED_MODE: vm
-      SEED_PASSWORD: ${SEED_PASSWORD:?Set SEED_PASSWORD in .env}
       API_PORT: "4000"
       WEB_ORIGIN: ${PUBLIC_SITE_URL}
     ports:

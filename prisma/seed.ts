@@ -15,12 +15,7 @@ const adapter = new PrismaMariaDb({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const vmMode = process.env.SEED_MODE === "vm";
-  const password = vmMode ? process.env.SEED_PASSWORD : "Student123!";
-  if (!password || (vmMode && password.length < 12)) {
-    throw new Error("SEED_PASSWORD must be at least 12 characters in VM mode");
-  }
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash("Student123!", 12);
 
   await Promise.all([
     prisma.user.upsert({
@@ -92,7 +87,7 @@ async function main() {
     });
   }
 
-  console.log("Seeded users, facilities, categories, and courts.");
+  console.log("Seeded demo users, facilities, categories, and courts.");
 }
 
 main()
