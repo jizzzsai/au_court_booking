@@ -68,7 +68,7 @@ same ports.
 ### Run on a Linux AMD64 VM without cloning the repository
 
 The GitHub Actions workflow publishes a `linux/amd64` image to
-`ghcr.io/jizzzsai/au_court_booking`. A Git tag such as `v1` produces the matching
+`ghcr.io/jizzzsai/au_court_booking`. A Git tag such as `v2` produces the matching
 image tag, so the VM can pin a release rather than a commit hash. The image
 contains the application source and dependencies. On the VM, place only two
 files in the same directory:
@@ -80,7 +80,7 @@ Generate each secret independently with `openssl rand -hex 32`. Use a hexadecima
 database password because Compose also puts it in a MySQL connection URL. Set
 `PUBLIC_ORIGIN` to the existing site's scheme and host, such as
 `https://example.edu`, and `PUBLIC_SITE_URL` to the same URL plus
-`/au-campus-court`. Set `IMAGE_TAG=v1` (or a later published version).
+`/au-campus-court`. Set `IMAGE_TAG=v2` (or a later published version).
 `WEB_HOST_PORT` defaults to 3100; first check that this loopback port is free.
 The API and database are private Docker services; only the website is published
 on `127.0.0.1:3100`.
@@ -167,6 +167,7 @@ npm run build:api
 npm run lint
 npm run test:api
 npm run build
+SITE_URL=https://bad-sashs.japaneast.cloudapp.azure.com/au-campus-court/ npm run test:assets
 ```
 
 ## Important files
