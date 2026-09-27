@@ -107,11 +107,21 @@ Do not replace the existing root-site configuration. The exact proxy rule
 depends on what already runs on the VM; `docker compose up -d` alone cannot
 claim a subpath on an existing FQDN. No new public API port or database port is
 needed: browser API requests use `/au-campus-court/api` through the web
-container. `deploy/nginx-au-campus-court.conf` is an IP-based Nginx example
-that leaves Ubuntu's default site enabled. Replace its `server_name` when a
-domain is ready. Allow inbound TCP 80 in the VM's Azure network security group
-for the HTTP demonstration; add TCP 443 and HTTPS when moving to a domain.
-Do not expose ports 3100, 4000, or 3306 publicly.
+container. `deploy/nginx-au-campus-court.conf` is the IP-based Nginx route;
+`deploy/nginx-au-campus-court-https.conf` is the domain route with HTTPS and
+HTTP-to-HTTPS redirection. Both leave Ubuntu's default site enabled. Allow
+inbound TCP 80 for Let's Encrypt validation and redirects, and TCP 443 for
+HTTPS, in the VM's Azure network security group. Do not expose ports 3100,
+4000, or 3306 publicly.
+
+The Azure demonstration uses
+`https://bad-sashs.japaneast.cloudapp.azure.com/au-campus-court/`. Its VM
+deployment is in `~/au-campus-court`, with only `compose.yml` and private
+`.env` needed for the Docker stack. Certbot manages the domain certificate;
+`deploy/certbot-reload-nginx.sh` is installed as a renewal deploy hook so
+Nginx reloads successful renewals. Check the stack with `sudo docker compose ps`
+from that directory and test renewal with
+`sudo /snap/bin/certbot renew --dry-run --run-deploy-hooks --no-random-sleep-on-renew`.
 
 ### Run Node.js on your Mac with only MySQL in Docker
 
@@ -172,6 +182,8 @@ npm run build
 - `compose.vm.yml` image-only Linux VM deployment
 - `vm.env.example` VM environment template
 - `deploy/nginx-au-campus-court.conf` IP-based reverse-proxy route
+- `deploy/nginx-au-campus-court-https.conf` HTTPS domain route
+- `deploy/certbot-reload-nginx.sh` certificate-renewal reload hook
 - `.github/workflows/publish-image.yml` AMD64 GHCR publishing workflow
 - `scripts/smoke-test.mjs` automated API verification
 - `PROJECT_PLAN.md` remaining implementation stages
