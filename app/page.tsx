@@ -31,6 +31,7 @@ type ManagedUser = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
 const tones = ["blue", "gold", "green"];
 
 function bangkokDate() {
@@ -60,8 +61,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
   const [loginOpen, setLoginOpen] = useState(false);
-  const [email, setEmail] = useState("student@au.edu");
-  const [password, setPassword] = useState("Student123!");
+  const [email, setEmail] = useState(DEMO_MODE ? "student@au.edu" : "");
+  const [password, setPassword] = useState(DEMO_MODE ? "Student123!" : "");
   const [token, setToken] = useState("");
   const [user, setUser] = useState<SessionUser | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -145,7 +146,7 @@ export default function Home() {
   async function createBooking(court: Court, time: string) {
     if (!token) {
       setLoginOpen(true);
-      setNotice("Sign in with the demo student account before booking.");
+      setNotice("Sign in before booking a court.");
       return;
     }
 
@@ -190,7 +191,7 @@ export default function Home() {
     setBookings([]);
     setManagedUsers([]);
     setManagedBookings([]);
-    setNotice("Signed out of the local demo account.");
+    setNotice("Signed out.");
   }
 
   async function updateCourtStatus(court: Court) {
@@ -317,7 +318,7 @@ export default function Home() {
           {!user && <button className="secondary-button" type="button" onClick={() => setLoginOpen(true)}>Sign in to view bookings</button>}
         </div>
         {!user ? (
-          <div className="booking-strip"><div><h2>Your reservations will appear here</h2><p>Use the local demo student account to test booking and cancellation.</p></div></div>
+          <div className="booking-strip"><div><h2>Your reservations will appear here</h2><p>Sign in to view and manage your bookings.</p></div></div>
         ) : bookings.filter((booking) => booking.status !== "CANCELLED").length === 0 ? (
           <div className="booking-strip"><div><h2>No upcoming reservation</h2><p>Choose an available time above to create your first booking.</p></div><a className="secondary-button" href="#availability">Browse availability</a></div>
         ) : (
@@ -384,26 +385,26 @@ export default function Home() {
         </section>
       )}
 
-      <footer id="support"><p><strong>AU Campus Court</strong> · Local development application</p><p>Need help? Contact the university sports office.</p></footer>
+      <footer id="support"><p><strong>AU Campus Court</strong></p><p>Need help? Contact the university sports office.</p></footer>
 
       {loginOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setLoginOpen(false); }}>
           <section className="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
             <button className="modal-close" type="button" onClick={() => setLoginOpen(false)} aria-label="Close sign in">×</button>
-            <p className="eyebrow">Local authentication</p>
+            <p className="eyebrow">Account access</p>
             <h2 id="login-title">Student sign in</h2>
-            <p className="modal-intro">Use the seeded account below. Microsoft university sign-in will replace this local form in the integration stage.</p>
+            <p className="modal-intro">{DEMO_MODE ? "Use a seeded demo account below." : "Sign in with an account provided by the court administrator."}</p>
             <form onSubmit={handleLogin}>
               <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
               <label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
               <button className="primary-button" type="submit">Sign in</button>
             </form>
-            <div className="demo-credentials">
+            {DEMO_MODE && <div className="demo-credentials">
               <span>Demo accounts use password Student123!</span>
               <button type="button" onClick={() => { setEmail("student@au.edu"); setPassword("Student123!"); }}>student@au.edu</button>
               <button type="button" onClick={() => { setEmail("staff@au.edu"); setPassword("Student123!"); }}>staff@au.edu</button>
               <button type="button" onClick={() => { setEmail("admin@au.edu"); setPassword("Student123!"); }}>admin@au.edu</button>
-            </div>
+            </div>}
           </section>
         </div>
       )}

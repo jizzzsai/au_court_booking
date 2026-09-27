@@ -64,6 +64,40 @@ The Docker setup is for local development. It uses the local credentials from
 Do not run the separate `npm run dev:all` process at the same time: it uses the
 same ports.
 
+### Run on a Linux AMD64 VM without cloning the repository
+
+The GitHub Actions workflow publishes one `linux/amd64` image to
+`ghcr.io/jizzzsai/au_court_booking`. It contains the application source and
+dependencies. On the VM, place only two files in the same directory:
+
+- `compose.yml`: a copy of this repository's `compose.vm.yml`
+- `.env`: a copy of `vm.env.example` with the VM's public URLs and unique secrets
+
+Generate each secret independently with `openssl rand -hex 32`. Use a hexadecimal
+database password because Compose also puts it in a MySQL connection URL. Set
+`PUBLIC_SITE_URL` to `http://VM_IP:3000` and `PUBLIC_API_URL` to
+`http://VM_IP:4000/api` (or your actual HTTPS URLs if a reverse proxy is set up).
+Open ports 3000 and 4000 in the VM firewall for direct HTTP access.
+
+After the GHCR package is made public, run this in that VM directory:
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+The first run pulls the application and MySQL images, creates the database,
+applies migrations, and seeds courts plus student, staff, and admin accounts.
+The three seeded accounts use the emails below and the private `SEED_PASSWORD`
+from `.env`. Changing `SEED_PASSWORD` after first startup does not change the
+passwords of existing accounts. The database lives in a named Docker volume.
+To inspect startup errors, use `docker compose logs -f`. To stop the stack
+without deleting data, use `docker compose down`.
+
+This VM setup is suitable for a working demonstration. It uses HTTP on ports
+3000 and 4000; add a reverse proxy and HTTPS before treating it as a public
+production service.
+
 ### Run Node.js on your Mac with only MySQL in Docker
 
 1. Start Docker Desktop.
@@ -120,6 +154,9 @@ npm run build
 - `prisma/seed.ts` demo data
 - `docker-compose.yml` local website, API, and MySQL services
 - `Dockerfile` Node.js image shared by the website and API
+- `compose.vm.yml` image-only Linux VM deployment
+- `vm.env.example` VM environment template
+- `.github/workflows/publish-image.yml` AMD64 GHCR publishing workflow
 - `scripts/smoke-test.mjs` automated API verification
 - `PROJECT_PLAN.md` remaining implementation stages
 

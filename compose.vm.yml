@@ -1,0 +1,71 @@
+services:
+  web:
+    image: ghcr.io/jizzzsai/au_court_booking:${IMAGE_TAG:-latest}
+    platform: linux/amd64
+    command: sh -c "npm run build && npm run start"
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?Set PUBLIC_API_URL in .env}
+      NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:?Set PUBLIC_SITE_URL in .env}
+      NEXT_PUBLIC_DEMO_MODE: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 90s
+
+  api:
+    image: ghcr.io/jizzzsai/au_court_booking:${IMAGE_TAG:-latest}
+    platform: linux/amd64
+    command: sh -c "npx prisma migrate deploy && npm run db:seed && npx tsx server/index.ts"
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql://campus_court:${DB_PASSWORD:?Set DB_PASSWORD in .env}@database:3306/au_campus_court
+      SHADOW_DATABASE_URL: mysql://campus_court:${DB_PASSWORD}@database:3306/au_campus_court_shadow
+      DB_HOST: database
+      DB_PORT: "3306"
+      DB_USER: campus_court
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: au_campus_court
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      PEER_API_KEY: ${PEER_API_KEY:?Set PEER_API_KEY in .env}
+      SEED_MODE: vm
+      SEED_PASSWORD: ${SEED_PASSWORD:?Set SEED_PASSWORD in .env}
+      API_PORT: "4000"
+      WEB_ORIGIN: ${PUBLIC_SITE_URL}
+    ports:
+      - "4000:4000"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  database:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: au_campus_court
+      MYSQL_USER: campus_court
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - campus-court-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  campus-court-mysql:
