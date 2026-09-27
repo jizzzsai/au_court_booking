@@ -107,7 +107,11 @@ Do not replace the existing root-site configuration. The exact proxy rule
 depends on what already runs on the VM; `docker compose up -d` alone cannot
 claim a subpath on an existing FQDN. No new public API port or database port is
 needed: browser API requests use `/au-campus-court/api` through the web
-container. Configure HTTPS on the existing proxy as appropriate.
+container. `deploy/nginx-au-campus-court.conf` is an IP-based Nginx example
+that leaves Ubuntu's default site enabled. Replace its `server_name` when a
+domain is ready. Allow inbound TCP 80 in the VM's Azure network security group
+for the HTTP demonstration; add TCP 443 and HTTPS when moving to a domain.
+Do not expose ports 3100, 4000, or 3306 publicly.
 
 ### Run Node.js on your Mac with only MySQL in Docker
 
@@ -167,6 +171,7 @@ npm run build
 - `Dockerfile` Node.js image shared by the website and API
 - `compose.vm.yml` image-only Linux VM deployment
 - `vm.env.example` VM environment template
+- `deploy/nginx-au-campus-court.conf` IP-based reverse-proxy route
 - `.github/workflows/publish-image.yml` AMD64 GHCR publishing workflow
 - `scripts/smoke-test.mjs` automated API verification
 - `PROJECT_PLAN.md` remaining implementation stages
