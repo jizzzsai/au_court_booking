@@ -1,0 +1,15 @@
+node_modules
+.git
+.env*
+.vinext
+.wrangler
+.next
+.sites-runtime
+dist
+out
+outputs
+work
+coverage
+*.pem
+*.tsbuildinfo
+npm-debug.log*

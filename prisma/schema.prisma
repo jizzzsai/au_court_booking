@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  STUDENT
+  STAFF
+  ADMIN
+}
+
+enum CourtStatus {
+  AVAILABLE
+  MAINTENANCE
+  CLOSED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REJECTED
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  studentId    String?   @unique @map("student_id") @db.VarChar(30)
+  externalId   String?   @unique @map("external_id") @db.VarChar(191)
+  fullName     String    @map("full_name") @db.VarChar(120)
+  email        String    @unique @db.VarChar(191)
+  passwordHash String?   @map("password_hash") @db.VarChar(255)
+  role         Role      @default(STUDENT)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  bookings     Booking[]
+
+  @@map("users")
+}
+
+model Facility {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique @db.VarChar(120)
+  location  String        @db.VarChar(255)
+  mapLink   String?       @map("map_link") @db.VarChar(500)
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  courts    SportsCourt[]
+
+  @@map("facilities")
+}
+
+model CourtCategory {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique @db.VarChar(100)
+  createdAt DateTime      @default(now()) @map("created_at")
+  courts    SportsCourt[]
+
+  @@map("court_categories")
+}
+
+model SportsCourt {
+  id         Int           @id @default(autoincrement())
+  facilityId Int           @map("facility_id")
+  categoryId Int           @map("category_id")
+  name       String        @db.VarChar(120)
+  capacity   Int           @default(2)
+  status     CourtStatus   @default(AVAILABLE)
+  opensAt    String        @default("08:00") @map("opens_at") @db.VarChar(5)
+  closesAt   String        @default("21:00") @map("closes_at") @db.VarChar(5)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  facility   Facility      @relation(fields: [facilityId], references: [id], onDelete: Restrict)
+  category   CourtCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  bookings   Booking[]
+
+  @@unique([facilityId, name])
+  @@index([categoryId, status])
+  @@map("sports_courts")
+}
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+  courtId   Int           @map("court_id")
+  userId    Int           @map("user_id")
+  startAt   DateTime      @map("start_at")
+  endAt     DateTime      @map("end_at")
+  status    BookingStatus @default(CONFIRMED)
+  purpose   String?       @db.VarChar(255)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  court     SportsCourt   @relation(fields: [courtId], references: [id], onDelete: Restrict)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([courtId, startAt, endAt])
+  @@index([userId, status])
+  @@map("bookings")
+}

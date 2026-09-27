@@ -1,0 +1,67 @@
+services:
+  web:
+    build: .
+    command: npm run dev:web -- --hostname 0.0.0.0
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  api:
+    build: .
+    command: sh -c "npx prisma migrate deploy && npm run db:seed && npm run dev:api"
+    environment:
+      DATABASE_URL: mysql://campus_court:campus_court_dev@database:3306/au_campus_court
+      SHADOW_DATABASE_URL: mysql://campus_court:campus_court_dev@database:3306/au_campus_court_shadow
+      DB_HOST: database
+      DB_PORT: "3306"
+      DB_USER: campus_court
+      DB_PASSWORD: campus_court_dev
+      DB_NAME: au_campus_court
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      PEER_API_KEY: ${PEER_API_KEY:?Set PEER_API_KEY in .env}
+      API_PORT: "4000"
+      WEB_ORIGIN: http://localhost:3000
+    ports:
+      - "4000:4000"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  database:
+    image: mysql:8.4
+    container_name: au-campus-court-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_local_only
+      MYSQL_DATABASE: au_campus_court
+      MYSQL_USER: campus_court
+      MYSQL_PASSWORD: campus_court_dev
+    ports:
+      - "3307:3306"
+    volumes:
+      - campus-court-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot_local_only"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  campus-court-mysql:
